@@ -84,6 +84,7 @@ def _envoy_linkopts():
         ],
         "//conditions:default": [
             "-pthread",
+            "-latomic",
             "-lrt",
             "-ldl",
             "-Wl,-z,relro,-z,now",

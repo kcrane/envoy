@@ -111,7 +111,7 @@ def _go_deps(skip_targets):
 def _rust_deps():
     external_http_archive(
         "rules_rust",
-        patches = ["@envoy//bazel:rules_rust.patch", "@envoy//bazel:rules_rust_ppc64le.patch"],
+        patches = ["@envoy//bazel:rules_rust.patch"],
     )
 
 def envoy_dependencies(skip_targets = []):
@@ -257,7 +257,13 @@ def envoy_dependencies(skip_targets = []):
     )
 
 def _boringssl():
-    external_http_archive(name = "boringssl")
+    external_http_archive(
+        name = "boringssl",
+        patch_args = ["-p1"],
+        patches = [
+            "@envoy//bazel:boringssl-s390x.patch",
+        ],
+    )
 
 def _boringssl_fips():
     external_http_archive(
@@ -744,6 +750,8 @@ def _fast_float():
 def _highway():
     external_http_archive(
         name = "highway",
+        patch_args = ["-p1"],
+        patches = ["@envoy//bazel:highway-s390x.patch"],
     )
 
 def _dragonbox():
@@ -775,6 +783,8 @@ def _com_github_google_quiche():
         name = "com_github_google_quiche",
         patch_cmds = ["find quiche/ -type f -name \"*.bazel\" -delete"],
         build_file = "@envoy//bazel/external:quiche.BUILD",
+        patches = ["@envoy//bazel/external:quiche-s390x.patch"],
+        patch_args = ["-p1"],
     )
 
 def _com_googlesource_googleurl():
@@ -794,7 +804,10 @@ def _com_github_grpc_grpc():
     external_http_archive(
         name = "com_github_grpc_grpc",
         patch_args = ["-p1"],
-        patches = ["@envoy//bazel:grpc.patch"],
+        patches = [
+            "@envoy//bazel:grpc.patch",
+            "@envoy//bazel:grpc-s390x.patch",
+        ],
         repo_mapping = {"@openssl": "@boringssl"},
     )
     external_http_archive(
@@ -874,6 +887,7 @@ def _proxy_wasm_cpp_host():
         patch_args = ["-p1"],
         patches = [
             "@envoy//bazel:proxy_wasm_cpp_host.patch",
+            "@envoy//bazel:proxy_wasm_cpp_host-s390x.patch",
         ],
     )
 
@@ -891,7 +905,11 @@ def _com_github_luajit_luajit():
     external_http_archive(
         name = "com_github_luajit_luajit",
         build_file_content = BUILD_ALL_CONTENT,
-        patches = ["@envoy//bazel/foreign_cc:luajit.patch"],
+        patches = [
+            "@envoy//bazel/foreign_cc:luajit-s390x.patch",
+            "@envoy//bazel/foreign_cc:luajit.patch",
+            "@envoy//bazel/foreign_cc:luajit-as.patch",
+        ],
         patch_args = ["-p1"],
         patch_cmds = ["chmod u+x build.py"],
     )
@@ -1007,7 +1025,10 @@ def _rules_ruby():
 def _foreign_cc_dependencies():
     external_http_archive(
         name = "rules_foreign_cc",
-        patches = ["@envoy//bazel:rules_foreign_cc.patch"],
+        patches = [
+            "@envoy//bazel:rules_foreign_cc.patch",
+            "@envoy//bazel:rules_foreign_cc-s390x.patch",
+        ],
         patch_args = ["-p1"],
     )
 

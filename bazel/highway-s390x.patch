@@ -1,0 +1,51 @@
+From 78c45eaa468e5625ae80f2ab8bf17258d0c790c2 Mon Sep 17 00:00:00 2001
+From: Shu-Chun Weng <scw@google.com>
+Date: Fri, 21 Feb 2025 09:15:09 -0800
+Subject: [PATCH] Amend asm/hwcap.h presence check with __has_include
+
+PiperOrigin-RevId: 729552256
+---
+ hwy/detect_targets.h | 16 ++++++++++++++++
+ hwy/targets.cc       |  2 +-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/hwy/detect_targets.h b/hwy/detect_targets.h
+index 0d277d0d92..7f7fe991f9 100644
+--- a/hwy/detect_targets.h
++++ b/hwy/detect_targets.h
+@@ -664,6 +664,22 @@
+ #endif
+ // Defining one of HWY_COMPILE_ONLY_* will trump HWY_COMPILE_ALL_ATTAINABLE.
+ 
++#ifndef HWY_HAVE_ASM_HWCAP  // allow override
++#ifdef TOOLCHAIN_MISS_ASM_HWCAP_H
++#define HWY_HAVE_ASM_HWCAP 0  // CMake failed to find the header
++#elif defined(__has_include)  // note: wrapper macro fails on Clang ~17
++// clang-format off
++#if __has_include(<asm/hwcap.h>)
++// clang-format on
++#define HWY_HAVE_ASM_HWCAP 1  // header present
++#else
++#define HWY_HAVE_ASM_HWCAP 0  // header not present
++#endif                        // __has_include
++#else                         // compiler lacks __has_include
++#define HWY_HAVE_ASM_HWCAP 0
++#endif
++#endif  // HWY_HAVE_ASM_HWCAP
++
+ #ifndef HWY_HAVE_AUXV  // allow override
+ #ifdef TOOLCHAIN_MISS_SYS_AUXV_H
+ #define HWY_HAVE_AUXV 0  // CMake failed to find the header
+diff --git a/hwy/targets.cc b/hwy/targets.cc
+index 5f3f0845ed..bc2a003a46 100644
+--- a/hwy/targets.cc
++++ b/hwy/targets.cc
+@@ -30,7 +30,7 @@
+     HWY_OS_LINUX
+ // sys/auxv.h does not always include asm/hwcap.h, or define HWCAP*, hence we
+ // still include this directly. See #1199.
+-#ifndef TOOLCHAIN_MISS_ASM_HWCAP_H
++#if HWY_HAVE_ASM_HWCAP
+ #include <asm/hwcap.h>
+ #endif
+ #if HWY_HAVE_AUXV
